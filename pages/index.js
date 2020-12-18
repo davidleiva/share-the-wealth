@@ -1,65 +1,161 @@
+import React from "react";
+import ReactDOM from "react-dom";
+import ReactFullpage from "@fullpage/react-fullpage";
 import Head from 'next/head'
-import styles from '../styles/Home.module.css'
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+// import 'fullpage.js/vendors/scrolloverflow'; // Optional. When using scrollOverflow:true
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+const originalColors = ['#ff5f45', '#0798ec', '#fc6c7c', '#435b71', 'orange', 'blue', 'purple', 'yellow'];
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sectionsColor: [...originalColors],
+      fullpages: [
+        {
+          text: "Section 1"
+        },
+        {
+          text: "Section 2"
+        },
+        {
+          text: 'Section 3',
+        }
+      ]
+    };
+  }
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+  onLeave(origin, destination, direction) {
+    console.log("onLeave", { origin, destination, direction });
+    // arguments are mapped in order of fullpage.js callback arguments do something
+    // with the event
+  }
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+  handleChangeColors() {
+    const newColors =
+      this.state.sectionsColor[0] === "yellow"
+        ? [...originalColors]
+        : ["yellow", "blue", "white"];
+    this.setState({
+      sectionsColor: newColors
+    });
+  }
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+  handleAddSection() {
+    this.setState(state => {
+      const { fullpages } = state;
+      const { length } = fullpages;
+      fullpages.push({
+        text: `section ${length + 1}`,
+        id: Math.random()
+      });
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+      return {
+        fullpages: [...fullpages]
+      };
+    });
+  }
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+  handleRemoveSection() {
+    this.setState(state => {
+      const { fullpages } = state;
+      const newPages = [...fullpages];
+      newPages.pop();
+
+      return { fullpages: newPages };
+    });
+  }
+
+  moveSectionDown(){
+    fullpage_api.moveSectionDown();
+  }
+
+  render() {
+    const { fullpages } = this.state;
+
+    if (!fullpages.length) {
+      return null;
+    }
+
+    const Menu = () => (
+      <div
+        className="menu"
+        style={{
+          position: "fixed",
+          top: 0,
+          zIndex: 100
+        }}
+      >
+        <ul className="actions">
+          <li>
+            <button onClick={() => this.handleAddSection()}>Add Section</button>
+            <button onClick={() => this.handleRemoveSection()}>
+              Remove Section
+            </button>
+            <button onClick={() => this.handleChangeColors()}>
+              Change background colors
+            </button>
+            <button onClick={() => this.moveSectionDown()}>
+              Move Section Down
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
+
+    return (
+
+      <div className="App">
+        <Head>
+          <title>My styled page</title>
+          <link href="/static/styles.css" rel="stylesheet" />
+        </Head>
+        <Menu />
+        <ReactFullpage
+          navigation
+          onLeave={this.onLeave.bind(this)}
+          // sectionsColor={this.state.sectionsColor}
+          render={comp =>
+            console.log("render prop change") || (
+              <ReactFullpage.Wrapper>
+                <div>
+                  <section key={'page-1'} className="section">
+                    <div className="SectionContainer columns">
+                      <div className="Content Content--Left column">
+                        <div className="MainText">
+                          <h2>
+                            <span className="Subtitle is-4">Did you know that </span>
+                            <span className="Title is-1">8 men are wealthier than half of the popullation</span>
+                            <span className="Subtitle is-1">?</span>
+                          </h2>
+                        </div>
+                      </div>
+                      <div className="Content Content--Right column">
+                        <div className="Illustration">
+                          <img src={'https://thumbs.dreamstime.com/x/cartoon-earth-humans-divided-two-unequal-parts-vector-65383884.jpg'} />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                  <div key={'page-2'} className="section">
+                    <h1>22222</h1>
+                  </div>
+                  <div key={'page-3'} className="section">
+                    <h1>33333</h1>
+                  </div>
+                </div>
+              </ReactFullpage.Wrapper>
+            )
+          }
+        />
+      </div>
+    );
+  }
 }
+                {/* {fullpages.map(({ text }) => (
+                  <div key={text} className="section">
+                    <h1>{text}</h1>
+                  </div>
+                ))} */}
+export default App;
